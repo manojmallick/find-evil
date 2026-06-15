@@ -13,7 +13,11 @@ close); everything else is the script.
 
 1. **Terminal:** font size **16pt+**, then run `clear` (no command history on screen).
 2. **Notifications off** (macOS: Focus / Do Not Disturb).
-3. **Make 2 slides** (Keynote / Google Slides / Canva) — text is in this doc below.
+3. **Slides are pre-made** — just open the PNGs full-screen when the beat calls for it:
+   - Slide 1 (open): `assets/slide1_problem.png`
+   - Slide 2 (close): `assets/slide2_close.png`
+   - `open assets/slide1_problem.png` → Preview opens → press the green/full-screen
+     button (or ⌘⇧F) for a clean full-screen slide. Same for slide 2.
 4. **Screen recorder:** QuickTime (⌘⇧5 → Record Entire Screen) or OBS, 1080p.
 5. **Dry-run once:** `cd /Users/manojmallick/Downloads/hack && bash demo.sh`
    (press Enter through it once so you know the rhythm). Then `clear` and record.
@@ -177,12 +181,13 @@ Owning this is a **strength** — honesty is an explicit judging value.
 ## The only commands you type (in order)
 
 ```bash
-# Beat 2: show the architecture image
-open assets/architecture.png
-
-# Beats 3–7: the whole live demo, one command, narrate at each pause
 cd /Users/manojmallick/Downloads/hack
-bash demo.sh
+
+open assets/slide1_problem.png      # Beat 1 — problem slide (full-screen it)
+open assets/architecture.png        # Beat 2 — architecture diagram
+bash demo.sh                        # Beats 3–7 — the live demo (Enter between shots)
+open assets/slide2_close.png        # Beat 7 — closing slide (full-screen it)
 ```
 
 That's it. No `/opt`, no `/cases`, no `/mnt` — nothing that can fail.
+All four images live in `assets/`.

@@ -3,51 +3,63 @@
 
 ---
 
-## ⚡ PRODUCTION FAST PATH (read this first — deadline is tonight)
+## ⚡ TWO WAYS TO RECORD (read this first)
 
-**Exact commands, verified against the shipped CLI.** Copy-paste these.
+There are two recording paths. **Path B works on any laptop (macOS/Linux) with
+zero setup — every command below was run and verified.** Use Path A only if you
+have a live SIFT Workstation with evidence mounted.
+
+### Path A — Live on SIFT (full fidelity)
 
 ```bash
 # Setup (once)
 cd /opt/find-evil && source venv/bin/activate
 
-# THE RUN (Shot 3-4) — these flags are real and tested:
+# THE RUN (Shot 3-4)
 find-evil --case /cases/CASE001 --disk /mnt/case_disk \
           --memory /cases/CASE001/memory.raw --max-iterations 3
 
+# Autonomous mode (best for the tiebreaker — needs ANTHROPIC_API_KEY)
+find-evil --case /cases/CASE001 --disk /mnt/case_disk --reasoning
+
 # THE REPORT (Shot 5)
 python3 -m json.tool /cases/CASE001/findings/findings.json | head -60
-firefox /cases/CASE001/findings/report.html &
+xdg-open /cases/CASE001/findings/report.html      # Linux
 
 # THE PROOF (Shot 6) — copy a call_id from the report, then:
 grep '<call_id>' /opt/find-evil/logs/tool_calls.jsonl | python3 -m json.tool
 ```
 
-### 🛟 NO-SIFT FALLBACK (if you can't mount a real image in time)
+### 🛟 Path B — Local laptop, no SIFT (VERIFIED — exact copy-paste)
 
-You can still record a compelling demo. The integration test drives the **real**
-agent, audit logger, and report generator end-to-end (with simulated tool
-output) — it produces the **same** self-correction moment and the **same**
-verifiable audit trail. A pre-built sample log + report already live in
-`docs/sample_run/`.
+The integration test drives the **real** agent, audit logger, and report
+generator end-to-end (with simulated tool output) — same self-correction moment,
+same verifiable audit trail. Pre-built sample artifacts live in `docs/sample_run/`.
+Run from the repo directory:
 
 ```bash
-# Show the guarantees as code (Shot 2 substitute — very strong on camera):
-python3 -m pytest tests/ -v | tail -30          # 47 passed, incl. 12/12 bypasses
+cd /Users/manojmallick/Downloads/hack
 
-# Show a real, populated run + the self-correction discrepancy:
-python3 -m pytest tests/integration/test_full_pipeline.py -v
+# Shot 2 — guarantees as code (very strong on camera):
+python3 -m pytest tests/                                    # 56 passed, incl. 12/12 bypasses
 
-# Show the pre-built artifacts (Shots 5-6):
-python3 -m json.tool docs/sample_run/findings.json
-grep 'scan_yara' docs/sample_run/tool_calls.jsonl | python3 -m json.tool   # proof shot
-firefox docs/sample_run/report.html &
+# Shot 3-4 — full pipeline live + the self-correction discrepancy:
+python3 -m pytest tests/integration/test_full_pipeline.py -o addopts="" -v
 
-# Show a HOSTILE action being blocked + logged (unique, memorable):
-head -1 docs/sample_run/tool_calls.jsonl | python3 -m json.tool   # the blocked curl
+# Shot 5 — the findings report (4 confirmed · 1 inferred · 1 discrepancy):
+python3 -m json.tool docs/sample_run/findings.json | head -35
+
+# Shot 6 — THE PROOF SHOT — grep a finding's call_id → exact tool + SHA256:
+grep scan_yara_894812af docs/sample_run/tool_calls.jsonl | python3 -m json.tool
+
+# Memorable — a hostile curl attempt BLOCKED + logged, never executed:
+head -1 docs/sample_run/tool_calls.jsonl | python3 -m json.tool
+
+# Open the report visually (macOS: `open`; Linux: `xdg-open`):
+open docs/sample_run/report.html
 ```
 
-> Be transparent on camera if you use the fallback: "This run uses simulated
+> Be transparent on camera if you use Path B: "This run uses simulated
 > forensic-tool output so it reproduces anywhere; the agent, guardrails, audit
 > log, and integrity check are all real and run live." Honesty is a judging
 > value here — owning it is a strength, not a weakness.
@@ -213,7 +225,8 @@ Make sure your test case has `cmd.exe` in the prefetch (disk timeline) but the m
 cat /cases/CASE001/findings/findings.json | python3 -m json.tool | head -60
 
 # Then open HTML (human-readable)
-firefox /cases/CASE001/findings/report.html &
+# macOS: open · Linux: xdg-open · (firefox also works on SIFT)
+open /cases/CASE001/findings/report.html
 ```
 
 **In the browser — point to each section:**
@@ -277,9 +290,9 @@ grep "get_mft_timeline_7f2a1b3c" /opt/find-evil/logs/tool_calls.jsonl | python3 
 **What to show:** GitHub repo, then the install command.
 
 ```bash
-# Show GitHub repo briefly in browser
-# Then show:
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/find-evil/main/install.sh | bash
+# Show GitHub repo briefly in browser: github.com/manojmallick/find-evil
+# Then show the one-command install:
+curl -fsSL https://raw.githubusercontent.com/manojmallick/find-evil/main/install.sh | bash
 ```
 
 **Narration:**
@@ -289,7 +302,7 @@ curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/find-evil/main/instal
 
 **Final text overlay:**
 ```
-Find Evil! · Apache 2.0 · github.com/YOUR_USERNAME/find-evil
+Find Evil! · Apache 2.0 · github.com/manojmallick/find-evil
 0% hallucination rate (CONFIRMED tier) · Full audit trail · Self-correcting
 SANS Find Evil! Hackathon 2026
 ```

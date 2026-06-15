@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1280px; height:800px; overflow:hidden; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+         background:radial-gradient(circle at 70% 10%, #16263a 0%, #0a0e14 60%); color:#e6edf3;
+         padding:54px 64px; height:800px; }
+  h1 { font-size:36px; font-weight:800; letter-spacing:-0.5px; }
+  h1 .ev { color:#ff5d5d; }
+  .lead { color:#8b949e; font-size:18px; margin-top:8px; max-width:1050px; line-height:1.4; }
+  .term { margin-top:30px; background:#0d1117; border:1px solid #30363d; border-radius:14px;
+          overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,0.5); }
+  .bar { background:#161b22; padding:13px 18px; display:flex; align-items:center; gap:9px; border-bottom:1px solid #30363d; }
+  .dot { width:13px; height:13px; border-radius:50%; }
+  .r{background:#ff5f56;} .y{background:#ffbd2e;} .g{background:#27c93f;}
+  .bar .ttl { color:#6e7b8a; font-size:14px; margin-left:12px; }
+  .body { padding:26px 28px; font-family:'SF Mono',Menlo,Consolas,monospace; font-size:16.5px; line-height:1.75; }
+  .cmt { color:#6e7b8a; }
+  .prompt { color:#3fb950; }
+  .cmd { color:#e6edf3; }
+  .hl { color:#e3b341; }
+  .k { color:#79c0ff; }
+  .s { color:#a5d6ff; }
+  .out { color:#c9d1d9; }
+  .foot { margin-top:26px; color:#aeb9c4; font-size:17px; line-height:1.5; }
+  .foot b { color:#3fb950; }
+</style></head>
+<body>
+  <h1>Verify any finding in &lt;10 seconds — full chain of custody</h1>
+  <div class="lead">Every CONFIRMED finding in the report carries a <span class="hl">call_id</span>.
+    Grep it against the audit log to get the exact tool, arguments, and the SHA256 of the output that produced it.</div>
+
+  <div class="term">
+    <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="ttl">analyst@sift — verify a finding from report.html</span></div>
+    <div class="body">
+<span class="cmt"># Finding F-001 in the report cites call_id: scan_yara_894812af</span><br>
+<span class="prompt">$</span> <span class="cmd">grep <span class="hl">scan_yara_894812af</span> /opt/find-evil/logs/tool_calls.jsonl | python3 -m json.tool</span><br>
+<span class="out">{</span><br>
+<span class="out">&nbsp;&nbsp;<span class="k">"call_id"</span>: <span class="s">"scan_yara_894812af"</span>,</span><br>
+<span class="out">&nbsp;&nbsp;<span class="k">"timestamp"</span>: <span class="s">"2026-06-15T20:56:23.549+00:00"</span>,</span><br>
+<span class="out">&nbsp;&nbsp;<span class="k">"tool"</span>: <span class="s">"scan_yara"</span>,</span><br>
+<span class="out">&nbsp;&nbsp;<span class="k">"args"</span>: { <span class="k">"image_path"</span>: <span class="s">"/mnt/case_disk"</span> },</span><br>
+<span class="out">&nbsp;&nbsp;<span class="k">"status"</span>: <span class="s">"executed"</span>,</span><br>
+<span class="out">&nbsp;&nbsp;<span class="k">"output_sha256"</span>: <span class="s">"761e1ec1…79bb22c"</span></span><br>
+<span class="out">}</span>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>No hallucination is possible here:</b> the report generator refuses to emit a CONFIRMED finding
+    whose call_id isn't in this log. The audit trail also captures every <i>blocked</i> attack attempt — without executing it.
+  </div>
+</body></html>

@@ -24,10 +24,9 @@ logs/
 findings/
 tests/benchmark/results/*.json
 
-# OS / editor
+# OS / editor / local tooling
 .DS_Store
 *.swp
 .idea/
 .vscode/
-DEVPOST.md
-DEMO_VIDEO_SCRIPT.md
+.claude/

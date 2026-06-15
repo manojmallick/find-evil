@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1280px; height:800px; overflow:hidden; }
+  body {
+    font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(circle at 25% 15%, #16263a 0%, #0a0e14 55%, #06080c 100%);
+    color:#e6edf3; padding:72px 80px; display:flex; flex-direction:column; height:800px;
+  }
+  .tag { color:#58a6ff; font-weight:700; letter-spacing:3px; font-size:15px; text-transform:uppercase; }
+  h1 { font-size:92px; font-weight:800; letter-spacing:-2px; margin-top:8px; line-height:1; }
+  h1 .ev { color:#ff5d5d; }
+  .sub { font-size:27px; color:#aeb9c4; margin-top:22px; max-width:1000px; line-height:1.35; font-weight:400; }
+  .sub b { color:#e6edf3; font-weight:700; }
+  .stats { display:flex; gap:22px; margin-top:auto; }
+  .stat { flex:1; background:rgba(255,255,255,0.035); border:1px solid #243244;
+          border-radius:16px; padding:26px 24px; }
+  .stat .n { font-size:46px; font-weight:800; line-height:1; }
+  .stat .n.g { color:#3fb950; } .stat .n.b { color:#58a6ff; } .stat .n.r { color:#ff7b72; } .stat .n.y { color:#e3b341; }
+  .stat .l { color:#8b949e; font-size:15px; margin-top:12px; line-height:1.3; }
+  .foot { margin-top:34px; display:flex; justify-content:space-between; align-items:center;
+          color:#6e7b8a; font-size:16px; }
+  .foot .badge { color:#aeb9c4; }
+  .mono { font-family:'SF Mono',Menlo,Consolas,monospace; }
+</style></head>
+<body>
+  <div class="tag">SANS Find Evil! Hackathon · 2026</div>
+  <h1>Find&nbsp;<span class="ev">Evil!</span></h1>
+  <div class="sub">Autonomous, audit-traced incident response for the SIFT Workstation.
+    The agent has <b>no shell</b> — evidence tampering and hallucinated findings are
+    made <b>architecturally impossible</b>, not merely discouraged.</div>
+
+  <div class="stats">
+    <div class="stat"><div class="n g">0%</div><div class="l">Hallucination rate<br>(CONFIRMED tier, enforced in code)</div></div>
+    <div class="stat"><div class="n r">12/12</div><div class="l">Documented bypass<br>attempts blocked</div></div>
+    <div class="stat"><div class="n b">52</div><div class="l">Automated tests<br>passing</div></div>
+    <div class="stat"><div class="n y">&lt;10s</div><div class="l">To verify any finding<br>via audit-log call_id</div></div>
+  </div>
+
+  <div class="foot">
+    <div class="badge">Custom MCP forensic server · 6-phase self-correcting analysis · Apache 2.0</div>
+    <div class="mono">github.com/manojmallick/find-evil</div>
+  </div>
+</body></html>

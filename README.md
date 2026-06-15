@@ -1,5 +1,7 @@
 # Find Evil! 🔍
 
+![Find Evil! — autonomous, audit-traced IR for the SIFT Workstation](assets/cover.png)
+
 **Autonomous, audit-traced incident response for the SANS SIFT Workstation.**
 
 > AI-powered adversaries operate in minutes; human responders are still pulling

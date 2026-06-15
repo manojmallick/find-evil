@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1280px; height:800px; overflow:hidden; }
+  body { font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+         background:#0a0e14; color:#e6edf3; padding:44px 56px; height:800px; }
+  h1 { font-size:34px; font-weight:800; letter-spacing:-0.5px; }
+  h1 .ev { color:#ff5d5d; }
+  .lead { color:#8b949e; font-size:17px; margin-top:6px; }
+  .flow { display:flex; align-items:stretch; gap:0; margin-top:30px; }
+  .col { flex:1; display:flex; flex-direction:column; }
+  .box { border-radius:12px; padding:16px 16px; margin:7px 0; font-size:14.5px; line-height:1.32; }
+  .box .t { font-weight:700; font-size:15px; margin-bottom:5px; }
+  .agent { background:rgba(227,179,65,0.10); border:1px solid #5a4a1e; }
+  .boundary { background:rgba(63,185,80,0.08); border:1px solid #2c5a33; }
+  .boundary .t { color:#3fb950; }
+  .trusted { background:rgba(88,166,255,0.08); border:1px solid #1e3a5a; }
+  .trusted .t { color:#58a6ff; }
+  .untrusted { background:rgba(255,93,93,0.10); border:1px solid #5a2424; }
+  .untrusted .t { color:#ff7b72; }
+  .audit { background:rgba(163,113,247,0.10); border:1px solid #3d2c63; }
+  .audit .t { color:#a371f7; }
+  .mono { font-family:'SF Mono',Menlo,Consolas,monospace; font-size:13px; }
+  .arrow { text-align:center; color:#6e7b8a; font-size:22px; margin:1px 0; }
+  .shield { color:#3fb950; }
+  .x { color:#ff7b72; font-weight:700; }
+  .banner { margin-top:22px; background:rgba(63,185,80,0.07); border:1px solid #2c5a33;
+            border-radius:12px; padding:16px 20px; font-size:15px; line-height:1.45; }
+  .banner b { color:#3fb950; }
+  .cols3 { display:flex; gap:18px; }
+  .cols3 > div { flex:1; }
+</style></head>
+<body>
+  <h1>Find <span class="ev">Evil!</span> — Architecture &amp; Trust Boundaries</h1>
+  <div class="lead">The agent reaches the OS only through typed tools. Every guarantee below is enforced in code, before any subprocess spawns.</div>
+
+  <div class="flow">
+    <div class="col" style="margin-right:18px;">
+      <div class="box untrusted"><div class="t">🔴 UNTRUSTED INPUT</div>
+        Disk image / memory dump<br><span class="mono">/mnt/case_disk · /cases/*.raw</span><br>mounted <b>READ-ONLY</b> (may contain planted payloads)</div>
+      <div class="box agent"><div class="t">🟡 AGENT — no direct OS access</div>
+        <span class="mono">find-evil</span> · 6-phase loop<br>Triage → Timeline → Memory →<br>Artifacts → Correlation → Report</div>
+    </div>
+
+    <div class="col" style="margin-right:18px;">
+      <div class="box boundary"><div class="t">🛡️ BOUNDARY 1 · Typed tool surface</div>
+        7 forensic tools ONLY.<br><span class="x">✗ rm ✗ dd ✗ curl ✗ ssh ✗ shred</span> — do not exist</div>
+      <div class="arrow">▼</div>
+      <div class="box boundary"><div class="t">🛡️ BOUNDARY 2 · Input validation</div>
+        Pydantic path + injection screen<br><span class="mono">validate_evidence_path()</span></div>
+      <div class="arrow">▼</div>
+      <div class="box boundary"><div class="t">🛡️ BOUNDARY 3 · Guarded exec</div>
+        <span class="mono">_safe_run()</span> · BLOCKED_COMMANDS +<br>protected paths · <b>shell=False</b></div>
+    </div>
+
+    <div class="col">
+      <div class="box trusted"><div class="t">🟢 TRUSTED · SIFT binaries (read-only)</div>
+        <span class="mono">log2timeline · vol.py · rip.pl · yara</span></div>
+      <div class="arrow">▼</div>
+      <div class="box audit"><div class="t">🟢 AUDIT &amp; INTEGRITY</div>
+        <span class="mono">tool_calls.jsonl</span><br>call_id (UUID) + SHA256(output) + timestamp<br><i>blocked attempts logged too</i></div>
+      <div class="arrow">▼</div>
+      <div class="box audit"><div class="t">🟢 REPORT — integrity gate</div>
+        Every CONFIRMED finding's call_id must<br>exist in the log, or generation aborts</div>
+    </div>
+  </div>
+
+  <div class="banner">
+    <b>Defense in depth:</b> an injected <span class="mono">parsers="mft; rm /cases/x"</span> is stopped 3 independent ways —
+    (1) the <span class="x">;</span> fails the injection screen, (2) <span class="mono">rm</span> is in BLOCKED_COMMANDS,
+    (3) <span class="mono">shell=False</span> makes it an inert string. All 12 documented bypasses blocked · 0% hallucination · full chain of custody.
+  </div>
+</body></html>

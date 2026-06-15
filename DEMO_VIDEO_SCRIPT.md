@@ -82,7 +82,12 @@ open docs/sample_run/report.html
 
 ## Shot 1 — The Problem (0:00–0:45)
 
-**What to show:** Run Protocol SIFT baseline on the starter case. Let it complete. Show its output.
+> ⚠️ **Two versions — pick by where you're recording.**
+> Path A (SIFT) runs the live Protocol SIFT baseline. Path B (local laptop) uses
+> a problem slide + narration — judges accept this; no `/opt/protocol-sift` or
+> mounted evidence needed. **If `cd /opt/protocol-sift` failed, you want Path B.**
+
+### Path A — Live Protocol SIFT baseline (SIFT only)
 
 **Terminal commands to run:**
 ```bash
@@ -91,23 +96,42 @@ cd /opt/protocol-sift
 claude "analyze /mnt/case_disk and find all indicators of compromise"
 # Wait for completion — save full output to baseline_output.txt
 # Highlight 3-4 findings that have NO artifact backing
+
+# On screen: count untraced findings
+grep -c "artifact\|inode\|offset\|call_id" baseline_output.txt   # → 0 traceable
 ```
 
-**Narration (speak or text overlay):**
-> "This is Protocol SIFT — the baseline this hackathon was created to improve. 
-> It found [N] potential indicators. But watch: this finding [point to finding] 
-> cites no artifact path. This one [point] has no timestamp. This one [point] 
-> cannot be traced to any specific file on the disk. 
-> These are hallucinations. In a real incident, they waste analyst time."
+### Path B — Problem slide (local, no SIFT) — RECOMMENDED if you're on a laptop
 
-**Text overlay:** `Protocol SIFT baseline · [N] untraced findings · 0% audit trail coverage`
+No terminal. Show a full-screen title/problem slide (make it in Keynote / Google
+Slides / CapCut) while you narrate. This is a clean, common way to open a demo.
 
-**Filming tip:** Use `grep` to quickly count untraced findings:
+**Slide text (one slide, large type):**
+```
+AI for incident response — two ways it breaks:
+
+  1.  It can DESTROY the evidence.    (an agent with a shell can rm / dd / overwrite)
+  2.  It HALLUCINATES findings.       ("PsExec ran at 14:22" — no artifact, no proof)
+
+In a real incident, an unverifiable finding is worse than no finding.
+```
+
+**Optional 8-second real clip (instead of a static slide):** open the sample
+report and point at the two tiers — the honest contrast.
 ```bash
-# Show this command on screen:
-grep -c "artifact\|inode\|offset\|call_id" baseline_output.txt
-# Then show: "0 findings with traceable artifacts"
+open docs/sample_run/report.html      # macOS  (Linux: xdg-open)
 ```
+Point at the CONFIRMED vs INFERRED columns: *"Most AI tools give you a flat list
+you can't check. We separate proven from inferred — and every CONFIRMED finding
+is greppable. That's what the next four minutes show."*
+
+**Narration (both paths):**
+> "AI-powered attackers move in minutes. The obvious fix — point an LLM agent at a
+> forensic workstation — has two failure modes that make it unusable: it can
+> destroy the very evidence it's analyzing, and it hallucinates findings you can't
+> verify. Find Evil! makes both impossible — architecturally, not with a prompt."
+
+**Text overlay:** `The problem: tamperable evidence + unverifiable findings`
 
 ---
 
@@ -132,6 +156,12 @@ grep -c "artifact\|inode\|offset\|call_id" baseline_output.txt
 ---
 
 ## Shot 3 — Live Analysis Start (1:15–2:00)
+
+> ⚠️ The commands below are **Path A (SIFT)**. On a laptop, record the
+> **Path B** equivalent from the top block instead:
+> `python3 -m pytest tests/integration/test_full_pipeline.py -o addopts="" -v`
+> — it runs the real agent + audit log + report end-to-end and shows the same
+> reasoning/self-correction. Narrate over it with the lines below.
 
 **What to show:** Start Find Evil! on the SAME case Protocol SIFT just analyzed.
 
@@ -180,6 +210,12 @@ what I find in memory next phase, I will flag the discrepancy.
 
 **This is the most important 60 seconds of the video.**
 
+> ⚠️ The screen output below is what a **SIFT run** produces. On a laptop, the
+> **same cmd.exe disk-vs-memory discrepancy is real and visible** in the Path B
+> integration test and the sample report — show `docs/sample_run/findings.json`
+> (the `discrepancies` section) or the "Cross-source discrepancies" row in
+> `docs/sample_run/report.html`, and narrate the lines below over it.
+
 **What to show:** The self-correction loop catching a disk-memory discrepancy.
 
 **Set this up before filming:**
@@ -219,14 +255,16 @@ Make sure your test case has `cmd.exe` in the prefetch (disk timeline) but the m
 
 **What to show:** Open the HTML report in a browser. Show the two tiers clearly.
 
-**Terminal:**
+**Terminal — Path A (SIFT):**
 ```bash
-# Show the JSON first (machine-readable)
 cat /cases/CASE001/findings/findings.json | python3 -m json.tool | head -60
+open /cases/CASE001/findings/report.html      # macOS · Linux: xdg-open
+```
 
-# Then open HTML (human-readable)
-# macOS: open · Linux: xdg-open · (firefox also works on SIFT)
-open /cases/CASE001/findings/report.html
+**Terminal — Path B (local laptop):**
+```bash
+python3 -m json.tool docs/sample_run/findings.json | head -35
+open docs/sample_run/report.html              # macOS · Linux: xdg-open
 ```
 
 **In the browser — point to each section:**
@@ -254,10 +292,15 @@ open /cases/CASE001/findings/report.html
 
 **What to show:** Pick any CONFIRMED finding from the report, copy its call_id, grep the audit log.
 
+**Path A (SIFT):**
 ```bash
-# Pick a call_id from the HTML report — e.g., "get_mft_timeline_7f2a1b3c"
-# Then verify it:
+# Pick a call_id from the HTML report, then verify it:
 grep "get_mft_timeline_7f2a1b3c" /opt/find-evil/logs/tool_calls.jsonl | python3 -m json.tool
+```
+
+**Path B (local laptop) — this is the one to record:**
+```bash
+grep scan_yara_894812af docs/sample_run/tool_calls.jsonl | python3 -m json.tool
 ```
 
 **Output on screen:**

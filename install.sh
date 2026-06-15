@@ -1,6 +1,6 @@
 #!/bin/bash
 # Find Evil! — One-command installer for SANS SIFT Workstation
-# Usage: curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/find-evil/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/manojmallick/find-evil/main/install.sh | bash
 # Tested on: SIFT Workstation v4.0 (Ubuntu 22.04)
 # Install time: ~4-6 minutes on standard hardware
 
@@ -83,7 +83,7 @@ if [ -d "$INSTALL_DIR/.git" ]; then
     ok "Updated to latest version"
 else
     info "Cloning Find Evil! repository..."
-    sudo git clone https://github.com/YOUR_USERNAME/find-evil.git "$INSTALL_DIR" || \
+    sudo git clone https://github.com/manojmallick/find-evil.git "$INSTALL_DIR" || \
         fail "Failed to clone repository. Check network and GitHub URL."
     ok "Repository cloned to $INSTALL_DIR"
 fi
@@ -213,6 +213,6 @@ echo "  AUDIT LOG:   /opt/find-evil/logs/tool_calls.jsonl"
 echo "  PROGRESS:    /opt/find-evil/logs/progress.json"
 echo "  HASH LOG:    /opt/find-evil/logs/evidence_hashes.json"
 echo ""
-echo "  GitHub: https://github.com/YOUR_USERNAME/find-evil"
+echo "  GitHub: https://github.com/manojmallick/find-evil"
 echo "  License: Apache 2.0"
 echo ""

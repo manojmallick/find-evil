@@ -50,20 +50,17 @@ Full diagram with trust boundaries: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 ```bash
 # One-command install (clones, venv, deps, YARA rules, directories, shell wrapper)
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/find-evil/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/manojmallick/find-evil/main/install.sh | bash
 ```
 
 Or from source:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/find-evil.git
+git clone https://github.com/manojmallick/find-evil.git
 cd find-evil
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ```
-
-> **NOTE:** replace `YOUR_USERNAME` with the GitHub account you publish under
-> (one find/replace in `install.sh` and this file).
 
 ### Run an analysis
 
@@ -106,11 +103,11 @@ hypotheses are formed, and targeted re-analysis runs — autonomously.
 ## Verify the guarantees yourself (no SIFT needed)
 
 ```bash
-python3 -m pytest tests/                                   # 47 passed
+python3 -m pytest tests/                                   # 52 passed
 python3 tests/benchmark/run_benchmark.py --dataset synthetic   # precision/recall + 0% hallucination
 ```
 
-- **47 tests** lock in the guardrails, the audit trail, and the hallucination guarantee.
+- **52 tests** lock in the guardrails, the audit trail, and the hallucination guarantee.
 - The **synthetic benchmark** runs anywhere and asserts 0% CONFIRMED-tier hallucination.
 
 ---
@@ -126,7 +123,7 @@ mcp_server/      Custom MCP server — typed forensic tools + architectural guar
   server.py        FastMCP registration layer
 agent/loop.py    The `find-evil` command — 6-phase orchestrator + self-correction
 reports/         Findings model + report generator (enforces call_id integrity)
-tests/           47 unit/integration tests + reproducible benchmark harness
+tests/           52 unit/integration tests + reproducible benchmark harness
 find_evil_custom.yar   20 custom YARA rules (lateral movement, persistence, C2, ...)
 install.sh       One-command SIFT installer
 ```

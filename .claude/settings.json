@@ -11,7 +11,8 @@
       "Bash(yara find_evil_custom.yar install.sh)",
       "Bash(export FIND_EVIL_LOG_DIR=/tmp/fe-live2/logs)",
       "Bash(git -c 'user.name=Find Evil' -c user.email=zzphandyman@gmail.com commit -q -m 'fix: path-injection rejection now returns a clean blocked envelope + logs it *)",
-      "Bash(echo \"tests: $\\(python3 -m pytest tests/ 2>&1)"
+      "Bash(echo \"tests: $\\(python3 -m pytest tests/ 2>&1)",
+      "Bash(git rebase *)"
     ]
   }
 }

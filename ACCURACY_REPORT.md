@@ -197,17 +197,19 @@ presented as direct artifact evidence, and documented with supporting call_ids.
 All claims above are backed by an automated suite that runs without SIFT:
 
 ```bash
-python3 -m pytest tests/        # 47 passed
+python3 -m pytest tests/        # 56 passed
 ```
 
 | Suite | Tests | What it locks in |
 |---|---|---|
 | `tests/unit/test_guardrails.py` | 30 | The 12 documented bypass classes (BYPASS_TESTING.md) stay blocked; legit reads stay allowed |
+| `tests/unit/test_tools_blocking.py` | 5 | Hostile input to a typed tool returns a clean, logged block — never a crash |
 | `tests/unit/test_report_integrity.py` | 5 | The 0%-hallucination guarantee (CONFIRMED ⇒ traceable call_id) |
+| `tests/unit/test_reasoning.py` | 4 | Autonomous LLM mode; integrity holds even when the model invents a call_id |
 | `tests/unit/test_logger.py` | 4 | Audit log records executed + blocked calls; no raw content; evidence-hash integrity |
 | `tests/unit/test_agent_pipeline.py` | 7 | Output parsers + cross-source discrepancy detection |
 | `tests/integration/test_full_pipeline.py` | 1 | End-to-end: stubbed tools → verifiable report + cmd.exe discrepancy resolved |
-| **Total** | **47** | |
+| **Total** | **56** | |
 
 ---
 
@@ -242,10 +244,13 @@ data yet — they will be populated once the NIST/starter datasets are run:
 documented miss, recall 0.80. Surfaced here rather than hidden.
 
 **Known systematic gaps (by design, this version):**
-1. **Timestomping detection** parses MFT timestamps but does not yet compare
-   `$STANDARD_INFORMATION` vs `$FILE_NAME` — planned for v1.1.
-2. **Encrypted volumes** (BitLocker/VeraCrypt) need keys the agent cannot obtain.
-3. **macOS/Linux artifacts** — phase definitions currently assume Windows.
+1. **Encrypted volumes** (BitLocker/VeraCrypt) need keys the agent cannot obtain.
+2. **macOS/Linux artifacts** — phase definitions currently assume Windows.
+
+**Closed since v1.0:** timestomping detection now compares
+`$STANDARD_INFORMATION` vs `$FILE_NAME` (the `detect_timestomping` tool, MITRE
+T1070.006), and memory analysis adds `malfind` (injected code) and `netscan`
+(network connections, with known-good IP filtering to suppress false positives).
 4. **Mobile device artifacts** — SIFT supports some; the agent does not invoke them.
 
 ---
@@ -268,7 +273,7 @@ head-to-head we have run:
 
 ```bash
 # 1. The guarantees, as tests (no SIFT needed):
-python3 -m pytest tests/                       # 47 passed
+python3 -m pytest tests/                       # 56 passed
 
 # 2. The synthetic accuracy numbers in this report:
 python3 tests/benchmark/run_benchmark.py --dataset synthetic

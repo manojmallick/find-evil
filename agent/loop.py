@@ -190,7 +190,7 @@ class FindEvilAgent:
         self._progress("triage", "complete")
 
     def phase_timeline(self) -> None:
-        self._say("[2/6] Phase 2: Timeline — MFT + events + prefetch")
+        self._say("[2/6] Phase 2: Timeline — MFT + events + prefetch + timestomping")
         if not self.disk_path:
             return
         self._reason("get_mft_timeline", "establish the filesystem + artifact timeline")
@@ -200,10 +200,23 @@ class FindEvilAgent:
         pf = tools.extract_prefetch(self.disk_path)
         if pf.get("ok"):
             self._ingest_prefetch(pf)
+
+        # Anti-forensics: $SI vs $FN timestamp comparison (v1.1 — closes the
+        # timestomping gap documented in ACCURACY_REPORT.md).
+        self._reason("detect_timestomping", "compare $SI vs $FN MFT timestamps for tampering")
+        ts = tools.detect_timestomping(self.disk_path)
+        if ts.get("ok") and ts.get("stdout", "").strip():
+            self._confirmed(
+                category="defense_evasion",
+                title="Timestomping detected ($SI/$FN mismatch)",
+                call_id=ts["call_id"],
+                description="MFT $STANDARD_INFORMATION timestamps precede $FILE_NAME — classic timestomping.",
+                mitre="T1070.006",
+            )
         self._progress("timeline", "complete")
 
     def phase_memory(self) -> None:
-        self._say("[3/6] Phase 3: Memory — pslist")
+        self._say("[3/6] Phase 3: Memory — pslist + malfind + netscan")
         if not self.memory_path:
             self._say("    [*] No memory image provided — skipping memory phase")
             return
@@ -213,6 +226,22 @@ class FindEvilAgent:
             self._ingest_pslist(ps)
         else:
             self._say(f"    [!] volatility unavailable: {ps.get('error', '')[:80]}")
+
+        self._reason("run_volatility_malfind", "find injected/hidden code in memory")
+        mf = tools.run_volatility_malfind(self.memory_path)
+        if mf.get("ok") and mf.get("stdout", "").strip():
+            self._confirmed(
+                category="defense_evasion",
+                title="Injected code detected in memory (malfind)",
+                call_id=mf["call_id"],
+                description="Volatility malfind flagged executable, non-file-backed memory regions.",
+                mitre="T1055",
+            )
+
+        self._reason("run_volatility_netscan", "recover network connections from memory")
+        ns = tools.run_volatility_netscan(self.memory_path)
+        if ns.get("ok"):
+            self._ingest_netscan(ns)
         self._progress("memory", "complete")
 
     def phase_artifacts(self) -> None:
@@ -377,6 +406,21 @@ class FindEvilAgent:
                     mitre="T1021",
                 )
 
+    def _ingest_netscan(self, res: dict[str, Any]) -> None:
+        # External connections only — known-good / local addresses are filtered
+        # to suppress false positives (raises precision; see ACCURACY_REPORT.md).
+        for ip in _parse_foreign_ips(res.get("stdout", "")):
+            if _is_known_good_ip(ip):
+                continue
+            self._inferred(
+                category="command_and_control",
+                title=f"Outbound connection to external host {ip}",
+                confidence=0.6,
+                supporting=[res["call_id"]],
+                description=f"Memory netscan shows a connection to {ip}; verify against threat intel.",
+                mitre="T1071",
+            )
+
 
 # ── module-level lenient parsers (pure, unit-testable) ──────────────────────
 def _parse_yara(stdout: str) -> list[tuple[str, str]]:
@@ -437,6 +481,31 @@ def _yara_category(rule: str) -> tuple[str, str | None]:
     return "suspicious", None
 
 
+# Known-good ranges filtered out of network findings to suppress false positives.
+_KNOWN_GOOD_PREFIXES = (
+    "127.", "0.", "169.254.",          # loopback / null / link-local
+    "10.", "192.168.",                  # private
+    "224.", "239.", "255.",             # multicast / broadcast
+)
+
+
+def _parse_foreign_ips(stdout: str) -> set[str]:
+    """Extract candidate foreign IPv4 addresses from netscan output."""
+    ips = set(re.findall(r"\b(?:\d{1,3}\.){3}\d{1,3}\b", stdout))
+    return {ip for ip in ips if all(0 <= int(o) <= 255 for o in ip.split("."))}
+
+
+def _is_known_good_ip(ip: str) -> bool:
+    """True for loopback/private/link-local/multicast addresses (benign)."""
+    if ip.startswith(_KNOWN_GOOD_PREFIXES):
+        return True
+    # 172.16.0.0/12 private range
+    if ip.startswith("172."):
+        second = int(ip.split(".")[1])
+        return 16 <= second <= 31
+    return False
+
+
 # ── CLI ─────────────────────────────────────────────────────────────────────
 def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
@@ -448,6 +517,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--memory", help="Memory image path (optional)")
     p.add_argument("--rules", default="/opt/find-evil/yara_rules", help="YARA rules path")
     p.add_argument("--max-iterations", type=int, default=3, help="Self-correction cap per phase")
+    p.add_argument(
+        "--reasoning",
+        action="store_true",
+        help="Autonomous LLM mode: a Claude model drives tool selection and "
+        "reasoning (requires ANTHROPIC_API_KEY). Guardrails still enforced.",
+    )
     p.add_argument(
         "--no-strict",
         action="store_true",
@@ -463,6 +538,9 @@ def main(argv: list[str] | None = None) -> int:
         print("error: at least one of --disk or --memory is required", file=sys.stderr)
         return 2
 
+    if args.reasoning:
+        return _run_reasoning(args)
+
     agent = FindEvilAgent(
         case_dir=args.case,
         disk_path=args.disk,
@@ -474,6 +552,49 @@ def main(argv: list[str] | None = None) -> int:
     try:
         agent.run(strict=not args.no_strict)
     except IntegrityError:
+        return 1
+    return 0
+
+
+def _run_reasoning(args: argparse.Namespace) -> int:
+    """Run the autonomous LLM investigator, then generate the verified report.
+
+    Falls back to the deterministic pipeline if the reasoning agent can't start
+    (no API key / SDK) — the analysis still completes, just non-autonomously.
+    """
+    from agent.reasoning import ReasoningAgent
+
+    try:
+        agent = ReasoningAgent(
+            case_dir=args.case,
+            disk_path=args.disk,
+            memory_path=args.memory,
+            verbose=not args.quiet,
+        )
+        result = agent.run()
+    except RuntimeError as e:
+        print(f"[!] {e}\n[!] Falling back to deterministic pipeline.", file=sys.stderr)
+        det = FindEvilAgent(
+            case_dir=args.case, disk_path=args.disk, memory_path=args.memory,
+            rules_path=args.rules, max_iterations=args.max_iterations,
+            verbose=not args.quiet,
+        )
+        try:
+            det.run(strict=not args.no_strict)
+        except IntegrityError:
+            return 1
+        return 0
+
+    # Same verified report path — the LLM's CONFIRMED findings are checked
+    # against the audit log exactly like the deterministic pipeline's.
+    result.finished_at = result.finished_at or _utc_now()
+    try:
+        out = generate_report(result, args.case, logger.TOOL_CALL_LOG, strict=not args.no_strict)
+        s = out["summary"]
+        print(f"[+] Autonomous analysis complete: {s['confirmed']} confirmed, "
+              f"{s['inferred']} inferred, {s['discrepancies']} discrepancies")
+    except IntegrityError as e:
+        print(f"[✗] INTEGRITY FAILURE — the LLM cited an untraceable call_id:\n{e}", file=sys.stderr)
         return 1
     return 0
 

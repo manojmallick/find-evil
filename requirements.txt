@@ -8,6 +8,10 @@ mcp>=1.2.0
 # Input validation for tool arguments (path/injection guardrails)
 pydantic>=2.6.0
 
+# Autonomous LLM reasoning mode (find-evil --reasoning). Optional at runtime:
+# the deterministic pipeline works without it. Requires ANTHROPIC_API_KEY.
+anthropic>=0.40.0
+
 # NOTE: forensic binaries (log2timeline.py, psort.py, vol.py, rip.pl, yara,
 # ewfmount, hashdeep) are provided by the SANS SIFT Workstation, not pip.
 # See install.sh for environment verification.

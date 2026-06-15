@@ -70,12 +70,20 @@ locked in by tests.
 - **Language:** Python 3.11
 - **Tool layer:** a custom MCP server (FastMCP) wrapping SIFT tooling —
   log2timeline/plaso, Volatility 3, RegRipper, YARA
-- **Agent:** a deterministic six-phase orchestrator with a bounded
-  self-correction loop. We chose deterministic sequencing over a free-roaming
-  LLM *on purpose*: a fixed pipeline over audited tools is more reproducible and
-  more defensible in court than letting a model improvise shell commands. The
-  analyst reasoning (sequencing, anomaly recognition, self-correction) is in the
-  control flow, not hidden in a prompt.
+- **Agent — two modes.** A **deterministic** six-phase orchestrator with a
+  bounded self-correction loop (reproducible, court-defensible), and an
+  **autonomous** mode (`--reasoning`) where a Claude model drives the
+  investigation — choosing the next tool from what it has found, narrating its
+  analyst reasoning, forming and testing hypotheses, self-correcting. The crucial
+  property: **the architectural guarantees hold even when the LLM is in
+  control.** The model can only call the typed forensic tools (no shell, no
+  `rm`/`curl`), and a CONFIRMED finding it records is *rejected* unless its
+  `call_id` is in the audit log. We have a test proving an LLM-invented call_id
+  cannot become a confirmed finding. Full autonomy, zero loss of evidence
+  integrity — because the constraints are architectural, not prompt-based.
+- **10 typed forensic tools** spanning disk, memory, registry, event logs, YARA,
+  anti-forensics (timestomping via $SI/$FN comparison), and memory
+  injection/network analysis (malfind, netscan).
 - **Integrity:** an append-only JSONL audit log; every tool call (executed *or*
   blocked) gets a UUID and a SHA256 of its output.
 - **Quality bar:** 47 automated tests + a reproducible accuracy benchmark that
@@ -119,10 +127,9 @@ explicit about what's measured vs. pending:
 
 ## What's next
 
-- Timestomping detection (`$STANDARD_INFORMATION` vs `$FILE_NAME`).
 - macOS/Linux artifact phases (currently Windows-focused).
-- An optional LLM narration layer over the deterministic floor, for analysts who
-  want natural-language reasoning without giving up the audit guarantees.
+- Encrypted-volume handling when keys are available.
+- A web UI over the existing JSON report + audit log.
 
 ## Try it
 

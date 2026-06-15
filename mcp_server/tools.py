@@ -245,6 +245,59 @@ def run_volatility_pslist(memory_path: str, output_format: str = "json") -> dict
         return _blocked("run_volatility_pslist", args, e)
 
 
+def run_volatility_malfind(memory_path: str, output_format: str = "json") -> dict[str, Any]:
+    """Find injected/hidden code in a memory image (Volatility windows.malfind)."""
+    args = {"memory_path": memory_path, "output_format": output_format}
+    try:
+        validated = _validate_memory_path(memory_path, tool="run_volatility_malfind", args=args)
+        output_format = _screen_aux_field(output_format, field_name="output_format", tool="run_volatility_malfind", args=args)
+        result = _safe_run(
+            ["vol.py", "-r", output_format, "-f", validated, "windows.malfind"],
+            tool="run_volatility_malfind",
+            args=args,
+        )
+        return _result(result)
+    except (config.GuardrailError, FileNotFoundError) as e:
+        return _blocked("run_volatility_malfind", args, e)
+
+
+def run_volatility_netscan(memory_path: str, output_format: str = "json") -> dict[str, Any]:
+    """Recover network connections from a memory image (Volatility windows.netscan)."""
+    args = {"memory_path": memory_path, "output_format": output_format}
+    try:
+        validated = _validate_memory_path(memory_path, tool="run_volatility_netscan", args=args)
+        output_format = _screen_aux_field(output_format, field_name="output_format", tool="run_volatility_netscan", args=args)
+        result = _safe_run(
+            ["vol.py", "-r", output_format, "-f", validated, "windows.netscan"],
+            tool="run_volatility_netscan",
+            args=args,
+        )
+        return _result(result)
+    except (config.GuardrailError, FileNotFoundError) as e:
+        return _blocked("run_volatility_netscan", args, e)
+
+
+def detect_timestomping(image_path: str) -> dict[str, Any]:
+    """Detect anti-forensic timestamp manipulation in the MFT.
+
+    Compares $STANDARD_INFORMATION vs $FILE_NAME timestamps via analyzeMFT;
+    a $SI time earlier than its $FN time is the classic timestomping signature.
+    Addresses the v1.0 gap noted in ACCURACY_REPORT.md.
+    """
+    args = {"image_path": image_path}
+    try:
+        validated = _validate_disk_path(image_path, tool="detect_timestomping", args=args)
+        out_csv = f"{config.OUTPUT_DIR}/{validated.strip('/').replace('/', '_')}.mft.csv"
+        result = _safe_run(
+            ["analyzeMFT.py", "-f", validated, "-o", out_csv, "--anomaly"],
+            tool="detect_timestomping",
+            args=args,
+        )
+        return _result(result, csv=out_csv)
+    except (config.GuardrailError, FileNotFoundError) as e:
+        return _blocked("detect_timestomping", args, e)
+
+
 # The complete typed tool surface. rm/dd/curl/ssh are deliberately absent.
 ALL_TOOLS = (
     get_disk_hash,
@@ -253,5 +306,8 @@ ALL_TOOLS = (
     extract_prefetch,
     get_registry_key,
     scan_yara,
+    detect_timestomping,
     run_volatility_pslist,
+    run_volatility_malfind,
+    run_volatility_netscan,
 )

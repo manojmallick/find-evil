@@ -30,8 +30,26 @@ banner "SHOT 3-4 — Full pipeline live + the self-correction discrepancy"
 python3 -m pytest tests/integration/test_full_pipeline.py -o addopts="" -v
 pause
 
-banner "SHOT 5 — The findings report (4 confirmed · 1 inferred · 1 discrepancy)"
-python3 -m json.tool docs/sample_run/findings.json | head -40
+banner "SHOT 5 — The findings report (fits on one screen)"
+python3 - <<'PY'
+import json
+d = json.load(open("docs/sample_run/findings.json"))
+s = d["summary"]; integ = d.get("integrity", {})
+print(f"  Case {d['case_id']}   disk={d['disk_path']}   memory={d['memory_path']}")
+print(f"  {s['confirmed']} CONFIRMED   {s['inferred']} INFERRED   "
+      f"{s['discrepancies']} DISCREPANCY   {s['iterations']} self-correction iterations")
+print(f"  Untraceable CONFIRMED findings: {integ.get('untraceable_confirmed_findings', 0)}   (integrity check passed)")
+print()
+print(f"  {'ID':5} {'TIER':10} {'CATEGORY':22} {'CALL_ID':22} FINDING")
+print("  " + "-" * 100)
+for f in d["findings"]:
+    cid = f["call_id"] or "(inferred — none)"
+    print(f"  {f['id']:5} {f['tier']:10} {f['category']:22} {cid:22} {f['title'][:30]}")
+print()
+print("  Cross-source discrepancies:")
+for x in d["discrepancies"]:
+    print(f"   - {x['id']}  {x['summary'][:70]}  [resolved: {x['resolved']}]")
+PY
 pause
 
 banner "SHOT 6 — THE PROOF SHOT: grep a finding's call_id -> exact tool + SHA256"

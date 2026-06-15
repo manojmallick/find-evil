@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "find-evil"
+version = "1.0.0"
+description = "Autonomous, audit-traced IR agent with a custom MCP forensic tool server (SANS Find Evil! Hackathon)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "mcp>=1.2.0",
+    "pydantic>=2.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+find-evil = "agent.loop:main"
+
+[tool.setuptools]
+packages = ["mcp_server", "agent", "reports"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

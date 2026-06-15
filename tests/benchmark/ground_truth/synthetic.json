@@ -1,0 +1,11 @@
+{
+  "dataset": "synthetic",
+  "description": "Fully-known crafted case for verifying benchmark math end-to-end without SIFT. Ground-truth IOCs are exactly the artifacts planted in the synthetic image.",
+  "iocs": [
+    {"id": "GT-1", "category": "command_and_control", "indicator": "C2_Cobalt_Strike_Beacon"},
+    {"id": "GT-2", "category": "persistence", "indicator": "Run key"},
+    {"id": "GT-3", "category": "lateral_movement", "indicator": "4648"},
+    {"id": "GT-4", "category": "defense_evasion", "indicator": "Timestomping"},
+    {"id": "GT-5", "category": "exfiltration", "indicator": "Archive_Staging"}
+  ]
+}

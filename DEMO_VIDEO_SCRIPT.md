@@ -3,6 +3,57 @@
 
 ---
 
+## ⚡ PRODUCTION FAST PATH (read this first — deadline is tonight)
+
+**Exact commands, verified against the shipped CLI.** Copy-paste these.
+
+```bash
+# Setup (once)
+cd /opt/find-evil && source venv/bin/activate
+
+# THE RUN (Shot 3-4) — these flags are real and tested:
+find-evil --case /cases/CASE001 --disk /mnt/case_disk \
+          --memory /cases/CASE001/memory.raw --max-iterations 3
+
+# THE REPORT (Shot 5)
+python3 -m json.tool /cases/CASE001/findings/findings.json | head -60
+firefox /cases/CASE001/findings/report.html &
+
+# THE PROOF (Shot 6) — copy a call_id from the report, then:
+grep '<call_id>' /opt/find-evil/logs/tool_calls.jsonl | python3 -m json.tool
+```
+
+### 🛟 NO-SIFT FALLBACK (if you can't mount a real image in time)
+
+You can still record a compelling demo. The integration test drives the **real**
+agent, audit logger, and report generator end-to-end (with simulated tool
+output) — it produces the **same** self-correction moment and the **same**
+verifiable audit trail. A pre-built sample log + report already live in
+`docs/sample_run/`.
+
+```bash
+# Show the guarantees as code (Shot 2 substitute — very strong on camera):
+python3 -m pytest tests/ -v | tail -30          # 47 passed, incl. 12/12 bypasses
+
+# Show a real, populated run + the self-correction discrepancy:
+python3 -m pytest tests/integration/test_full_pipeline.py -v
+
+# Show the pre-built artifacts (Shots 5-6):
+python3 -m json.tool docs/sample_run/findings.json
+grep 'scan_yara' docs/sample_run/tool_calls.jsonl | python3 -m json.tool   # proof shot
+firefox docs/sample_run/report.html &
+
+# Show a HOSTILE action being blocked + logged (unique, memorable):
+head -1 docs/sample_run/tool_calls.jsonl | python3 -m json.tool   # the blocked curl
+```
+
+> Be transparent on camera if you use the fallback: "This run uses simulated
+> forensic-tool output so it reproduces anywhere; the agent, guardrails, audit
+> log, and integrity check are all real and run live." Honesty is a judging
+> value here — owning it is a strength, not a weakness.
+
+---
+
 ## Pre-filming checklist
 
 - [ ] SIFT VM running, Protocol SIFT baseline installed

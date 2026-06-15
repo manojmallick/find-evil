@@ -1,0 +1,103 @@
+{
+  "case_id": "CASE001",
+  "disk_path": "/mnt/case_disk",
+  "memory_path": "/cases/CASE001/memory.raw",
+  "summary": {
+    "total_findings": 5,
+    "confirmed": 4,
+    "inferred": 1,
+    "discrepancies": 1,
+    "iterations": 2
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "tier": "CONFIRMED",
+      "category": "command_and_control",
+      "title": "YARA match: C2_Cobalt_Strike_Beacon",
+      "description": "Custom rule 'C2_Cobalt_Strike_Beacon' matched on /mnt/case_disk/Windows/Temp/svch0st.exe.",
+      "call_id": "scan_yara_894812af",
+      "artifact_path": "/mnt/case_disk/Windows/Temp/svch0st.exe",
+      "timestamp": null,
+      "confidence": 1.0,
+      "supporting_call_ids": [],
+      "mitre": "TA0011"
+    },
+    {
+      "id": "F-002",
+      "tier": "CONFIRMED",
+      "category": "persistence",
+      "title": "YARA match: Persistence_Registry_Run_Keys_Suspicious",
+      "description": "Custom rule 'Persistence_Registry_Run_Keys_Suspicious' matched on /mnt/case_disk/Windows/System32/config/SOFTWARE.",
+      "call_id": "scan_yara_894812af",
+      "artifact_path": "/mnt/case_disk/Windows/System32/config/SOFTWARE",
+      "timestamp": null,
+      "confidence": 1.0,
+      "supporting_call_ids": [],
+      "mitre": "TA0003"
+    },
+    {
+      "id": "F-003",
+      "tier": "INFERRED",
+      "category": "suspicious_execution",
+      "title": "LOLBIN executed: cmd.exe",
+      "description": "cmd.exe appears in prefetch. Legitimate uses exist; escalate only with corroborating timeline/parent-process evidence.",
+      "call_id": null,
+      "artifact_path": null,
+      "timestamp": null,
+      "confidence": 0.55,
+      "supporting_call_ids": [
+        "extract_prefetch_bc619155"
+      ],
+      "mitre": null
+    },
+    {
+      "id": "F-004",
+      "tier": "CONFIRMED",
+      "category": "persistence",
+      "title": "Registry Run key persistence: Microsoft\\Windows\\CurrentVersion\\Run",
+      "description": "Autostart entry \u2192 C:\\Windows\\Temp\\svch0st.exe",
+      "call_id": "get_registry_key_27f103a5",
+      "artifact_path": "Microsoft\\Windows\\CurrentVersion\\Run",
+      "timestamp": null,
+      "confidence": 1.0,
+      "supporting_call_ids": [],
+      "mitre": "T1547.001"
+    },
+    {
+      "id": "F-005",
+      "tier": "CONFIRMED",
+      "category": "lateral_movement",
+      "title": "Explicit-credential logons (Event 4648 \u00d71)",
+      "description": "Event ID 4648 indicates logon with explicit credentials.",
+      "call_id": "get_event_logs_56dd34b3",
+      "artifact_path": null,
+      "timestamp": null,
+      "confidence": 1.0,
+      "supporting_call_ids": [],
+      "mitre": "T1021"
+    }
+  ],
+  "discrepancies": [
+    {
+      "id": "D-001",
+      "summary": "Process 'cmd.exe' found in disk prefetch timeline but NOT in memory process list",
+      "hypotheses": [
+        "Process terminated before memory capture",
+        "Process-hiding technique active (rootkit)",
+        "Disk timestamp modified post-compromise (timestomping)"
+      ],
+      "resolution": "Re-analysis: loaded modules still mapped in VAD \u2014 process terminated before capture, memory not fully reclaimed.",
+      "resolved": true,
+      "supporting_call_ids": []
+    }
+  ],
+  "started_at": "2026-06-15T20:56:23.549+00:00",
+  "finished_at": "2026-06-15T20:56:23.550+00:00",
+  "integrity": {
+    "confirmed_findings_verified": true,
+    "untraceable_confirmed_findings": 0,
+    "audit_log": "/tmp/fe-sample/logs/tool_calls.jsonl",
+    "logged_call_ids": 8
+  }
+}

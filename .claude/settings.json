@@ -3,7 +3,9 @@
     "allow": [
       "Bash(echo \"total tests: $\\(python3 -m pytest tests/ --co -q)",
       "WebFetch(domain:findevil.devpost.com)",
-      "Bash(git -c 'user.name=Find Evil' -c user.email=zzphandyman@gmail.com commit -q -m 'feat: Find Evil! autonomous IR agent — MCP server, 6-phase agent, reports, tests *)"
+      "Bash(git -c 'user.name=Find Evil' -c user.email=zzphandyman@gmail.com commit -q -m 'feat: Find Evil! autonomous IR agent — MCP server, 6-phase agent, reports, tests *)",
+      "Bash(bash -n install.sh)",
+      "Bash(git -c 'user.name=Find Evil' -c user.email=zzphandyman@gmail.com commit -q -m 'docs: complete hackathon submission artifacts \\(LICENSE, README, architecture, datasets, devpost, sample run\\) *)"
     ]
   }
 }

@@ -111,6 +111,15 @@ ok "Directories created"
 # ── SETUP: YARA rules ─────────────────────────────────────────────────────
 info "Setting up YARA rules library..."
 YARA_DIR="$INSTALL_DIR/yara_rules"
+sudo mkdir -p "$YARA_DIR"
+
+# Install our 20 custom rules so scan_yara() (default rules_path=$YARA_DIR) loads them.
+if [ -f "$INSTALL_DIR/find_evil_custom.yar" ]; then
+    sudo cp "$INSTALL_DIR/find_evil_custom.yar" "$YARA_DIR/find_evil_custom.yar"
+    ok "Custom YARA rules installed ($(grep -c '^rule ' "$INSTALL_DIR/find_evil_custom.yar") rules)"
+else
+    warn "find_evil_custom.yar not found — custom IOC rules unavailable"
+fi
 
 if [ ! -d "$YARA_DIR/malware" ]; then
     info "Cloning community YARA rules..."

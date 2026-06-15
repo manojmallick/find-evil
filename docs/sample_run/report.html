@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Find Evil! Report — CASE001</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background:#0d1117; color:#e6edf3; }
+  header { background:#161b22; padding:24px 32px; border-bottom:1px solid #30363d; }
+  h1 { margin:0; font-size:22px; }
+  .sub { color:#8b949e; font-size:13px; margin-top:4px; }
+  .bar { display:flex; gap:16px; padding:20px 32px; }
+  .stat { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:14px 20px; min-width:120px; }
+  .stat .n { font-size:28px; font-weight:700; }
+  .stat .l { color:#8b949e; font-size:12px; text-transform:uppercase; }
+  section { padding:8px 32px 24px; }
+  h2 { border-bottom:1px solid #30363d; padding-bottom:6px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #21262d; vertical-align:top; }
+  th { color:#8b949e; font-weight:600; }
+  .pill { padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+  .confirmed { background:#1f6f3f; color:#d5ffe0; }
+  .inferred { background:#7a5c12; color:#fff6d5; }
+  code { background:#21262d; padding:1px 5px; border-radius:4px; font-size:12px; }
+  .verify { color:#58a6ff; font-size:11px; }
+</style></head><body>
+<header>
+  <h1>Find Evil! — Incident Report</h1>
+  <div class="sub">Case <code>CASE001</code> ·
+    disk <code>/mnt/case_disk</code> ·
+    memory <code>/cases/CASE001/memory.raw</code> ·
+    2 self-correction iteration(s)</div>
+</header>
+<div class="bar">
+  <div class="stat"><div class="n">5</div><div class="l">Total</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">Confirmed</div></div>
+  <div class="stat"><div class="n">1</div><div class="l">Inferred</div></div>
+  <div class="stat"><div class="n">1</div><div class="l">Discrepancies</div></div>
+</div>
+<section>
+  <h2>CONFIRMED findings <span class="verify">— every row traceable to the audit log</span></h2>
+  <table><tr><th>ID</th><th>Category</th><th>Finding</th><th>Artifact</th><th>When</th><th>Verify (call_id)</th></tr>
+  <tr><td>F-001</td><td><span class="pill confirmed">command_and_control</span></td><td>YARA match: C2_Cobalt_Strike_Beacon</td><td><code>/mnt/case_disk/Windows/Temp/svch0st.exe</code></td><td>—</td><td><code>scan_yara_894812af</code><br><span class="verify">grep scan_yara_894812af /opt/find-evil/logs/tool_calls.jsonl</span></td></tr>
+<tr><td>F-002</td><td><span class="pill confirmed">persistence</span></td><td>YARA match: Persistence_Registry_Run_Keys_Suspicious</td><td><code>/mnt/case_disk/Windows/System32/config/SOFTWARE</code></td><td>—</td><td><code>scan_yara_894812af</code><br><span class="verify">grep scan_yara_894812af /opt/find-evil/logs/tool_calls.jsonl</span></td></tr>
+<tr><td>F-004</td><td><span class="pill confirmed">persistence</span></td><td>Registry Run key persistence: Microsoft\Windows\CurrentVersion\Run</td><td><code>Microsoft\Windows\CurrentVersion\Run</code></td><td>—</td><td><code>get_registry_key_27f103a5</code><br><span class="verify">grep get_registry_key_27f103a5 /opt/find-evil/logs/tool_calls.jsonl</span></td></tr>
+<tr><td>F-005</td><td><span class="pill confirmed">lateral_movement</span></td><td>Explicit-credential logons (Event 4648 ×1)</td><td><code>—</code></td><td>—</td><td><code>get_event_logs_56dd34b3</code><br><span class="verify">grep get_event_logs_56dd34b3 /opt/find-evil/logs/tool_calls.jsonl</span></td></tr>
+  </table>
+</section>
+<section>
+  <h2>INFERRED findings <span class="verify">— analytical, confidence-scored</span></h2>
+  <table><tr><th>ID</th><th>Category</th><th>Finding</th><th>Confidence</th><th>Support</th></tr>
+  <tr><td>F-003</td><td><span class="pill inferred">suspicious_execution</span></td><td>LOLBIN executed: cmd.exe</td><td>55%</td><td><code>extract_prefetch_bc619155</code></td></tr>
+  </table>
+</section>
+<section>
+  <h2>Cross-source discrepancies</h2>
+  <table><tr><th>ID</th><th>Summary</th><th>Resolution</th></tr>
+  <tr><td>D-001</td><td>Process &#x27;cmd.exe&#x27; found in disk prefetch timeline but NOT in memory process list</td><td>Re-analysis: loaded modules still mapped in VAD — process terminated before capture, memory not fully reclaimed.</td></tr>
+  </table>
+</section>
+</body></html>

@@ -30,3 +30,4 @@ tests/benchmark/results/*.json
 .idea/
 .vscode/
 DEVPOST.md
+DEMO_VIDEO_SCRIPT.md
